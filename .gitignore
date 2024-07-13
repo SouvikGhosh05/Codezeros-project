@@ -1,0 +1,6 @@
+nodejsapp/src/node_modules
+nodejsapp/src/package-lock.json
+terraform-aws/.terraform
+terraform-aws/*.tfstate*
+terraform-aws/.terraform*
+*.key
