@@ -4,3 +4,4 @@ terraform-aws/.terraform
 terraform-aws/*.tfstate*
 terraform-aws/.terraform*
 *.key
+*.pem

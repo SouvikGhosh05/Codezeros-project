@@ -9,7 +9,7 @@ terraform {
 
 
 provider "aws" {
-  region = "ap-south-1"
+  region = var.region
 }
 
 
@@ -26,5 +26,37 @@ resource "aws_subnet" "public_sub" {
   availability_zone       = "ap-south-1a"
   tags = {
     Name = "public_subnet"
+  }
+}
+
+resource "aws_security_group" "sg_ec2" {
+  vpc_id = aws_vpc.terraform_vpc.id
+  name        = "sg_ec2"
+  description = "Security group for EC2"
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  ingress {
+    description = "Node app port"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 }
