@@ -19,7 +19,7 @@ resource "aws_instance" "public_instance" {
   instance_type          = "t2.large"
   key_name               = var.key_name
   subnet_id              = aws_subnet.public_sub.id
-  security_groups        = [aws_security_group.sg_ec2.id]
+  vpc_security_group_ids = [aws_security_group.sg_ec2.id]
 
   tags = {
     Name = "public_instance"
@@ -62,6 +62,7 @@ resource "aws_instance" "public_instance" {
     }
 }
 data "template_file" "inventory" {
+  depends_on = [aws_instance.public_instance]
   template = <<-EOT
     [ec2_instances]
     ${aws_instance.public_instance.public_ip} ansible_user=ubuntu ansible_private_key_file=${path.module}/${var.key_name}.pem
@@ -74,12 +75,16 @@ resource "local_file" "dynamic_inventory" {
   filename = "dynamic_inventory.ini"
   content  = data.template_file.inventory.rendered
   file_permission = 0400
-
-#   provisioner "local-exec" {
-#     command = "chmod 400 ${local_file.dynamic_inventory.filename}"
-#   }
 }
 
+resource "terraform_data" "run_ansible" {
+  depends_on = [local_file.dynamic_inventory]
+
+  provisioner "local-exec" {
+    command = "ansible-playbook -v -i dynamic_inventory.ini deploy-app.yaml"
+    working_dir = path.module
+  }
+}
 output "publicip-ec2" {
-  value = aws_instance.public_instance.public_ip
+  value = "Congrats! Your Node app is running on ${aws_instance.public_instance.public_ip}:3000"
 }
